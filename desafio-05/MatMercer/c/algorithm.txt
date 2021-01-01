@@ -1,0 +1,11 @@
+All operations just ignore whitespace or newlines
+
+1. Read the Area codes from bottom to top - DONE
+    Best case:
+        lookup for :"saera" in the json
+        for each area, store it into a hashmap
+    Worst case:
+        areas aren't at the end of the file, causes more time to lookup
+    Best case:
+        areas are in the bottom of the file, so I can get it way faster
+
