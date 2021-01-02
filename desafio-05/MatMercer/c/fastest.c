@@ -4,9 +4,11 @@
 #include "fasticionarios.h"
 
 void assertReadUntil();
+void assertReadSalary();
 void assertSeekArea();
 void assertSeekUntil();
 void assertReadWorker();
+void assertGlobalAverage();
 
 void assertStringEqual(char* msg, char* expected, char* yielded);
 void assertIntEqual(char* msg, int expected, int yielded);
@@ -18,7 +20,9 @@ int main() {
     assertReadUntil();
 
     assertSeekArea();
+    assertReadSalary();
     assertReadWorker();
+    assertGlobalAverage();
 
     return 0;
 }
@@ -83,6 +87,18 @@ void assertReadUntil() {
     assertStringEqual("readUntil must read corretly", "the content of a string", result);
 }
 
+void assertReadSalary() {
+    const char* f = "test_readSalary_0.txt";
+
+    FILE *fp;
+
+    fp = fopen(f, "r");
+
+    int salary = readSalary(fp);
+
+    assertIntEqual("read the salary corretly", 123456, salary);
+}
+
 void assertReadWorker() {
     const char* file10K = "Funcionarios-10K.json";
     FILE *f10p;
@@ -96,8 +112,23 @@ void assertReadWorker() {
     assertIntEqual("worker: maps worker id", 1, w.id);
     assertStringEqual("worker: maps worker name", "Aahron", w.name);
     assertStringEqual("worker: maps worker surName", "Abaine", w.surName);
-    assertFloatEqual("worker: maps worker salary", 24048.75f, w.salary);
+    assertFloatEqual("worker: maps worker salary", 2404875, w.salary);
     assertStringEqual("worker: maps worker area", "A2", w.area);
+}
+
+void assertGlobalAverage() {
+    struct Worker w1;
+    struct Worker w2;
+
+    int accumulator = 0;
+
+    w1.salary = 5;
+    w2.salary = 1;
+
+    globalAverage(w1, &accumulator);
+    globalAverage(w2, &accumulator);
+
+    assertFloatEqual("calculates global average correctly", 0.03, getGlobalAverage(&accumulator));
 }
 
 void assertStringEqual(char* msg, char* expected, char* yielded) {
@@ -118,7 +149,7 @@ void assertIntEqual(char* msg, int expected, int yielded) {
 
 void assertFloatEqual(char* msg, float expected, float yielded) {
     if (expected != yielded) {
-        fprintf(stderr, "ERROR: '%s', expected '%f' but got '%f'\n", msg, expected, yielded);
+        fprintf(stderr, "ERROR: '%s', expected '%f' but got '%f', [%u != %u]\n", msg, expected, yielded, *(unsigned int*)&expected, *(unsigned int*)&yielded);
     } else {
         pass(msg);
     }

@@ -6,6 +6,9 @@
 #include "fasticionarios.h"
 
 #define AREA_TABLE_SIZE 32
+#define DECIMAL_PLACES_MULTIPLIER 100
+#define MAX_BUFF 256 // TODO: I can calculate the buffer size with ftell(fp) in a lot of functions
+
 void readAreas(FILE* fp) {
     const char* areasKeyword = ":\"saera\"";
     const int areasKeywordSize = 7;
@@ -69,7 +72,6 @@ void seekUntil(FILE* fp, char c) {
     }
 }
 
-#define MAX_BUFF 256 // todo: I can calculate the buffer size with ftell(fp)
 char* readUntil(FILE* fp, char c) {
     char* buffer;
 
@@ -107,12 +109,47 @@ struct Worker readWorker(FILE* fp) {
     strcpy(w.surName, readUntil(fp, '"'));
 
     seekUntil(fp, ':');
-    w.salary = atof(readUntil(fp, ','));
+    w.salary = readSalary(fp);
 
     seekUntil(fp, ':');
     seekUntil(fp, '"');
     strcpy(w.area, readUntil(fp, '"'));
 
     return w;
+}
+
+int readSalary(FILE* fp) {
+    char* buffer;
+
+    buffer = (char*)malloc(MAX_BUFF); // slow, allocates every time
+
+    int count = 0;
+
+    while(!feof(fp)) {
+        char rc = fgetc(fp);
+        if (rc == '.') {
+            continue;
+        }
+        if (rc == ',') {
+            break;
+        }
+
+        buffer[count++] = rc;
+    }
+    buffer[count] = '\0';
+
+    return atoi(buffer);
+}
+
+static float avgTotal = 0;
+void globalAverage(struct Worker w, int* accumulator) {
+    // TODO: mutex lock
+    avgTotal++;
+
+    *accumulator += w.salary;
+}
+
+float getGlobalAverage(int* accumulator) {
+    return ((float) *accumulator) / (avgTotal * DECIMAL_PLACES_MULTIPLIER);
 }
 
